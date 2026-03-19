@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt-策略提示词写作助手</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f7fa;
+            color: #1e293b;
+            padding: 2rem 1rem;
+            line-height: 1.5;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);
+            border: 1px solid #e9eef2;
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #0f2b45 0%, #1f4a7a 100%);
+            color: white;
+            padding: 2.2rem 2.5rem;
+        }
+        .header h1 {
+            font-weight: 600;
+            font-size: 2.4rem;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+        .header .sub {
+            color: #c4daf5;
+            font-size: 1.1rem;
+        }
+        .principles-banner {
+            background: #edf2f9;
+            padding: 0.8rem 2.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.2rem 2rem;
+            border-bottom: 1px solid #d0ddee;
+            color: #1e3f68;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .form-section { padding: 2rem 2.5rem 2.5rem; }
+        .section-title {
+            font-weight: 600;
+            font-size: 1.3rem;
+            margin: 2rem 0 1.2rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #d7e3f5;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-title .step {
+            background: #1f4a7a;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem 2rem; }
+        .field { margin-bottom: 1.5rem; position: relative; }
+        .field label {
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 6px;
+            color: #1e3f68;
+        }
+        .ai-optimized {
+            border-left: 4px solid #10b981;
+            background-color: #f0fdf4;
+            transition: all 0.3s;
+            padding-left: 8px;
+            border-radius: 0 16px 16px 0;
+        }
+        .ai-badge {
+            background: #10b981;
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 30px;
+            margin-left: 8px;
+            font-weight: 400;
+        }
+        .hint {
+            font-size: 0.85rem;
+            color: #4f6f97;
+            margin: 6px 0 4px;
+            background: #f1f7fe;
+            padding: 6px 12px;
+            border-radius: 12px;
+            border-left: 3px solid #3f6eb0;
+        }
+        .example-hint {
+            font-size: 0.8rem;
+            color: #4f6f97;
+            margin-bottom: 6px;
+            font-style: italic;
+            background: #f2f6fc;
+            padding: 4px 14px;
+            border-radius: 30px;
+            display: inline-block;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid #d0ddee;
+            border-radius: 16px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            background: white;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: #1f4a7a;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(31,74,122,0.1);
+        }
+        .dynamic-table {
+            border: 1px solid #dbe4f0;
+            border-radius: 20px;
+            padding: 1.2rem;
+            background: #fbfdff;
+        }
+        .signal-row, .risk-row {
+            display: grid;
+            grid-template-columns: 1.5fr 1.5fr 1fr 0.5fr;
+            gap: 12px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+        .risk-row { grid-template-columns: 2fr 2fr 0.5fr; }
+        .dynamic-header {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #2b5385;
+            margin-bottom: 8px;
+            display: grid;
+            grid-template-columns: 1.5fr 1.5fr 1fr 0.5fr;
+            gap: 12px;
+            padding-left: 4px;
+        }
+        .risk-header { grid-template-columns: 2fr 2fr 0.5fr; }
+        .remove-btn {
+            background: none;
+            border: 1px solid #cbd9ec;
+            width: 36px;
+            height: 36px;
+            border-radius: 30px;
+            font-size: 1.3rem;
+            color: #7f99c0;
+            cursor: pointer;
+        }
+        .remove-btn:hover { background: #ffeae9; border-color: #e0a0a0; color: #bc3b3b; }
+        .add-btn {
+            background: #e7f0fe;
+            border: 1px dashed #6f95cf;
+            color: #1e3a5f;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .action-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+            justify-content: space-between;
+            align-items: center;
+            margin: 2rem 0 1.8rem;
+            padding-top: 1.2rem;
+            border-top: 2px solid #cbddf2;
+        }
+        .btn-primary {
+            background: #1f4a7a;
+            color: white;
+            border: none;
+            padding: 14px 42px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+        .btn-primary:hover { background: #2a5f9a; }
+        .btn-success {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-success:hover { background: #0e9f6e; }
+        .btn-secondary {
+            background: white;
+            border: 1.5px solid #b7cfec;
+            padding: 12px 30px;
+            border-radius: 40px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .review-box {
+            background: #f5f9ff;
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border: 1px solid #c6d9fc;
+        }
+        .review-content {
+            background: #ffffff;
+            padding: 1.5rem;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            white-space: pre-wrap;
+            border: 1px solid #d0e0fc;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+        .output-panel {
+            background: #0f2b45;
+            color: #eaf1fd;
+            border-radius: 22px;
+            padding: 1.8rem;
+            margin-top: 2rem;
+        }
+        .output-content {
+            background: #1a3752;
+            padding: 1.5rem;
+            border-radius: 18px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            border: 1px solid #3a5e83;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .copy-btn, .optimize-btn {
+            background: #2f4f7a;
+            color: white;
+            border: none;
+            padding: 8px 22px;
+            border-radius: 30px;
+            margin-top: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-right: 12px;
+        }
+        .file-upload { background: #eaf2fb; padding: 12px; border-radius: 16px; margin: 1rem 0; }
+        .flex-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Prompt-策略提示词写作助手</h1>
+        <div class="sub">调用DeepSeek大模型生成高质量提示词，让AI编程更懂你的需求</div>
+    </div>
+    <div class="principles-banner">
+        <span>🔹 具体明确</span> <span>🔹 说明原因</span> <span>🔹 示例即真理</span> <span>🔹 分步推进</span>
+        <span>🔹 明确行动</span> <span>🔹 正向指令</span>
+    </div>
+
+    <div class="form-section">
+        <!-- ===== 1. 基本信息 ===== -->
+        <div class="section-title"><span class="step">1</span> 策略基本信息</div>
+        <div class="grid-2">
+            <div class="field"><label>策略名称</label><input type="text" id="stratName" value="treasury_futures_spread_v1"></div>
+            <div class="field">
+                <label>策略类型</label>
+                <select id="stratType">
+                    <option value="套利策略" selected>套利策略</option>
+                    <option value="做市策略">做市策略</option>
+                    <option value="宏观趋势策略">宏观趋势策略</option>
+                    <option value="信用债筛选策略">信用债筛选策略</option>
+                </select>
+            </div>
+        </div>
+        <div class="grid-2">
+            <div class="field"><label>交易标的</label><input type="text" id="instrument" value="T2406 和 T2409 国债期货"></div>
+            <div class="field" id="goalField">
+                <label>策略目标 + 原因</label>
+                <textarea id="goal" rows="2">预期近月-远月价差将从历史高位回归，通过做空价差组合（做空近月+做多远月）赚取价差缩小的收益。基于过去60个交易日数据，当前价差处于历史90%分位数。</textarea>
+                <div class="hint">💡 说明动机，例如：基于历史统计，价差存在均值回归特性</div>
+            </div>
+        </div>
+
+        <!-- ===== 2. 输入信号 ===== -->
+        <div class="section-title"><span class="step">2</span> 输入信号</div>
+        <div class="dynamic-table">
+            <div class="dynamic-header"><span>信号名称/字段</span><span>数据来源</span><span>更新频率</span><span></span></div>
+            <div id="signalRows"></div>
+            <button class="add-btn" id="addSignalRow">➕ 添加信号行</button>
+        </div>
+
+        <!-- ===== 3. 执行逻辑 ===== -->
+        <div class="section-title"><span class="step">3</span> 执行逻辑</div>
+        <div class="field" id="entryField">
+            <label>进场条件</label>
+            <div class="example-hint" id="entryExample">📋 套利示例：价差 > 均值+1.5σ 则做空价差</div>
+            <textarea id="entryLogic" rows="2">当(近月价格 - 远月价格) > 过去60日均值 + 1.5倍标准差，且当前持仓为0时，执行：做空1手近月合约，同时做多1手远月合约（做空价差）</textarea>
+        </div>
+        <div class="field" id="exitField">
+            <label>出场条件</label>
+            <div class="example-hint" id="exitExample">📋 需明确止盈、止损、时间退出条件</div>
+            <textarea id="exitLogic" rows="2">1. 止盈：价差回落至均值±0.3σ以内，平仓全部头寸；2. 止损：价差继续扩大超过开仓时阈值的1.5倍，强制平仓；3. 时间止损：持仓超过5个交易日未触发止盈止损，平仓出场。优先级：止损 > 时间止损 > 止盈。</textarea>
+        </div>
+        <div class="field">
+            <label>调仓/调整逻辑</label>
+            <textarea id="adjustLogic" rows="1">无</textarea>
+        </div>
+
+        <!-- ===== 4. 风控规则 ===== -->
+        <div class="section-title"><span class="step">4</span> 风控规则</div>
+        <div class="dynamic-table">
+            <div class="dynamic-header risk-header"><span>触发条件</span><span>执行动作</span><span></span></div>
+            <div id="riskRows"></div>
+            <button class="add-btn" id="addRiskRow">➕ 添加风控行</button>
+        </div>
+
+        <!-- ===== 5. 输出要求 ===== -->
+        <div class="section-title"><span class="step">5</span> 输出要求</div>
+        <div class="grid-2">
+            <div class="field"><label>编程语言/框架</label><select id="lang"><option selected>Python 3.9</option><option>Python 3.11</option></select></div>
+            <div class="field"><label>核心函数</label><input type="text" id="functions" value="calculate_spread(), generate_signal(), risk_check()"></div>
+        </div>
+        <div class="grid-2">
+            <div class="field"><label>输出文件格式</label><select id="fileFormat"><option selected>.py 脚本</option><option>.md 文档</option></select></div>
+            <div class="field"><label>输出格式示例</label><textarea id="outputFormat" rows="2"><signal><time>%Y%m%d</time><action>short_spread</action></signal></textarea></div>
+        </div>
+
+        <!-- ===== 6. 参考示例 ===== -->
+        <div class="section-title"><span class="step">6</span> 参考示例</div>
+        <div class="file-upload">
+            <label>📎 上传或粘贴</label>
+            <input type="file" id="exampleFile" accept=".txt,.md,.py">
+            <textarea id="exampleText" placeholder="粘贴示例..." rows="2"><signal><time>09:30</time><action>short_spread</action></signal></textarea>
+        </div>
+
+        <!-- ===== 7. 其他约束 ===== -->
+        <div class="section-title"><span class="step">7</span> 其他约束</div>
+        <div class="field" id="constraintsField">
+            <select id="constraintsSelect">
+                <option value="">—— 选择常用约束 ——</option>
+                <option value="Jupyter环境，依赖pandas、numpy、matplotlib，代码包含详细注释">Jupyter + pandas/numpy/matplotlib + 详细注释</option>
+                <option value="包含单元测试，使用pytest框架，测试覆盖率>80%">包含单元测试，使用pytest</option>
+            </select>
+            <textarea id="constraints" placeholder="手动输入" rows="2">基于过去60个交易日数据计算均值和标准差；回测时考虑双边万分之0.5手续费</textarea>
+        </div>
+
+        <!-- ===== 8. AI审视与优化 ===== -->
+        <div class="section-title"><span class="step">8</span> AI审视与优化</div>
+        <div class="review-box">
+            <div class="flex-row" style="margin-bottom:16px;">
+                <button class="btn-primary" id="reviewBtn">🔍 AI审视表单</button>
+                <button class="btn-success" id="optimizeFormBtn">✨ AI一键优化表单</button>
+            </div>
+            <div class="review-content" id="reviewOutput">点击审视，AI会提供表单内容和逻辑存在问题的地方，请参考修改或者让AI一键修改</div>
+            <div class="field" style="margin-top:16px;">
+                <label>📝 手动补充说明</label>
+                <textarea id="supplementInput" placeholder="可根据AI审视结果在此补充信息..." rows="2"></textarea>
+            </div>
+        </div>
+
+        <!-- ===== 9. 生成与优化 ===== -->
+        <div class="action-bar">
+            <button class="btn-secondary" id="resetBtn">重置</button>
+            <button class="btn-primary" id="generateBtn">🚀 生成提示词</button>
+        </div>
+
+        <!-- ===== 10. 输出区域 ===== -->
+        <div class="output-panel">
+            <h3>📋 生成的提示词</h3>
+            <div class="output-content" id="outputContent">点击生成按钮...</div>
+            <div style="display:flex; gap:12px; margin:16px 0;">
+                <button class="copy-btn" id="copyBtn">📎 复制</button>
+                <span id="apiNote" style="color:#b0c8e5;"></span>
+            </div>
+            <div style="margin-top:20px; border-top:1px solid #3e5a7c; padding-top:20px;">
+                <label style="color:white;">✨ 优化建议</label>
+                <textarea id="optimizeInput" placeholder="例如：增加夏普比率计算、添加日志输出..." rows="2" style="width:100%; background:#1a3752; border:1px solid #5a7aa5; color:white; margin:10px 0;"></textarea>
+                <button class="optimize-btn" id="optimizeBtn">🔄 应用优化</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // DeepSeek配置
+    const DEEPSEEK_API_KEY = 'sk-0b7e6f54afc1464fadd16d522072309d';
+    const DEEPSEEK_URL = 'https://api.deepseek.com/v1/chat/completions';
+
+    // 策略模板预设（逻辑严谨版）
+    const strategyTemplates = {
+        '套利策略': {
+            signals: ['近月合约价格', '远月合约价格', '价差(近月-远月)', '60日均值', '60日标准差'],
+            goal: '预期近月-远月价差将从历史高位回归，通过做空价差组合（做空近月+做多远月）赚取价差缩小的收益。基于过去60个交易日数据，当前价差处于历史90%分位数。',
+            entryLogic: '当(近月价格 - 远月价格) > 过去60日均值 + 1.5倍标准差，且当前持仓为0时，执行：做空1手近月合约，同时做多1手远月合约（做空价差）',
+            exitLogic: '1. 止盈：价差回落至均值±0.3σ以内，平仓全部头寸；2. 止损：价差继续扩大超过开仓时阈值的1.5倍，强制平仓；3. 时间止损：持仓超过5个交易日未触发止盈止损，平仓出场。优先级：止损 > 时间止损 > 止盈。',
+            constraints: '基于过去60个交易日数据计算均值和标准差；回测时考虑双边万分之0.5手续费'
+        },
+        '做市策略': {
+            signals: ['买一价', '卖一价', '持仓量', '订单簿不平衡', '历史波动率'],
+            goal: '通过为ETF提供双边报价赚取买卖价差，动态调整报价以控制库存风险。目标持仓维持在±5000股以内。',
+            entryLogic: '基准价差设为0.002元；当净持仓>3000股时，卖价下调0.0002元；当净持仓<-3000股时，买价上调0.0002元；报价更新频率500ms。',
+            exitLogic: '每日收盘前强制平仓所有库存；单笔亏损超过0.5%时暂停报价5分钟；单日累计亏损超过2%则停止报价。',
+            constraints: '最大持仓限制±10000股；考虑交易成本万分之0.3；使用限价单报价。'
+        },
+        '宏观趋势策略': {
+            signals: ['GDP季环比', 'CPI同比', 'PMI', '社融存量同比', '10年期国债收益率'],
+            goal: '基于宏观指标超预期程度，判断国债期货方向性趋势。指标超预期幅度超过0.5个标准差时触发信号。',
+            entryLogic: '当CPI超预期且PMI连续两月回升时，做空10年期国债期货；当GDP低于预期且社融增速回落时，做多10年期国债期货。信号权重等权分配。',
+            exitLogic: '持有至下一个宏观数据发布日；单笔止损1%；若反向信号出现则立即平仓。',
+            constraints: '数据来源Wind；超预期幅度基于过去24个月数据计算；仓位不超过总资金20%。'
+        },
+        '信用债筛选策略': {
+            signals: ['资产负债率', 'EBITDA/利息', '信用利差', '评级', '行业景气度'],
+            goal: '通过多因子打分模型筛选高性价比信用债，月度调仓。综合得分前20%的债券纳入投资池。',
+            entryLogic: '财务指标权重40%（资产负债率、EBITDA/利息），市场指标权重30%（信用利差），外部指标权重30%（评级、行业景气度）。综合得分前20%的债券等权配置。',
+            exitLogic: '每月第一个交易日重筛；个券利差扩大超过200bp则立即卖出；评级下调至AA以下时卖出。',
+            constraints: '单券持仓不超过总资产5%；行业集中度不超过30%；考虑0.5%买卖价差。'
+        }
+    };
+
+    // 初始化信号表
+    const signalRowsDiv = document.getElementById('signalRows');
+    const addSignalBtn = document.getElementById('addSignalRow');
+    
+    function createSignalRow(name = '', source = 'API', freq = '实时') {
+        const div = document.createElement('div');
+        div.className = 'signal-row';
+        div.innerHTML = `
+            <input type="text" class="sig-name" value="${name}" placeholder="信号名">
+            <input type="text" class="sig-source" value="${source}" placeholder="来源">
+            <input type="text" class="sig-freq" value="${freq}" placeholder="频率">
+            <button class="remove-btn">✕</button>
+        `;
+        div.querySelector('.remove-btn').onclick = () => div.remove();
+        return div;
+    }
+
+    // 根据策略类型加载模板
+    function loadStrategyTemplate(type) {
+        const tmpl = strategyTemplates[type];
+        if (!tmpl) return;
+        
+        // 更新信号行
+        signalRowsDiv.innerHTML = '';
+        tmpl.signals.forEach(s => signalRowsDiv.appendChild(createSignalRow(s)));
+        
+        // 更新字段
+        document.getElementById('goal').value = tmpl.goal;
+        document.getElementById('entryLogic').value = tmpl.entryLogic;
+        document.getElementById('exitLogic').value = tmpl.exitLogic;
+        document.getElementById('constraints').value = tmpl.constraints;
+        
+        // 更新示例提示
+        document.getElementById('entryExample').innerText = `📋 ${type}示例：${tmpl.entryLogic.substring(0, 40)}...`;
+        document.getElementById('exitExample').innerText = `📋 ${type}示例：${tmpl.exitLogic.substring(0, 40)}...`;
+    }
+
+    // 监听策略类型变化
+    document.getElementById('stratType').addEventListener('change', (e) => {
+        loadStrategyTemplate(e.target.value);
+    });
+
+    // 初始化默认模板
+    loadStrategyTemplate('套利策略');
+    addSignalBtn.addEventListener('click', () => signalRowsDiv.appendChild(createSignalRow('')));
+
+    // 初始化风控表
+    const riskRowsDiv = document.getElementById('riskRows');
+    const addRiskBtn = document.getElementById('addRiskRow');
+    
+    function createRiskRow(cond = '', act = '') {
+        const div = document.createElement('div');
+        div.className = 'risk-row';
+        div.innerHTML = `
+            <input type="text" class="risk-cond" value="${cond}" placeholder="触发条件">
+            <input type="text" class="risk-act" value="${act}" placeholder="执行动作">
+            <button class="remove-btn">✕</button>
+        `;
+        div.querySelector('.remove-btn').onclick = () => div.remove();
+        return div;
+    }
+    
+    riskRowsDiv.appendChild(createRiskRow('单策略保证金占用 > 20%', '暂停开新仓'));
+    riskRowsDiv.appendChild(createRiskRow('单笔亏损 > 30%', '强制平仓'));
+    addRiskBtn.addEventListener('click', () => riskRowsDiv.appendChild(createRiskRow('', '')));
+
+    // 收集表单数据
+    function collectFormData() {
+        const signals = [];
+        document.querySelectorAll('#signalRows .signal-row').forEach(row => {
+            signals.push({
+                name: row.querySelector('.sig-name')?.value || '',
+                source: row.querySelector('.sig-source')?.value || '',
+                freq: row.querySelector('.sig-freq')?.value || ''
+            });
+        });
+        
+        const risks = [];
+        document.querySelectorAll('#riskRows .risk-row').forEach(row => {
+            risks.push({
+                condition: row.querySelector('.risk-cond')?.value || '',
+                action: row.querySelector('.risk-act')?.value || ''
+            });
+        });
+
+        return {
+            stratName: document.getElementById('stratName').value,
+            stratType: document.getElementById('stratType').value,
+            instrument: document.getElementById('instrument').value,
+            goal: document.getElementById('goal').value,
+            signals: signals,
+            entryLogic: document.getElementById('entryLogic').value,
+            exitLogic: document.getElementById('exitLogic').value,
+            adjustLogic: document.getElementById('adjustLogic').value,
+            risks: risks,
+            lang: document.getElementById('lang').value,
+            functions: document.getElementById('functions').value,
+            fileFormat: document.getElementById('fileFormat').value,
+            outputFormat: document.getElementById('outputFormat').value,
+            example: document.getElementById('exampleText').value,
+            constraints: document.getElementById('constraints').value
+        };
+    }
+
+    // 高亮更新
+    function setFormValueWithHighlight(fieldId, newValue, reason = '') {
+        const field = document.getElementById(fieldId);
+        if (!field || field.value === newValue) return;
+        field.value = newValue;
+        const parent = field.closest('.field');
+        if (parent) {
+            parent.classList.add('ai-optimized');
+            const label = parent.querySelector('label');
+            if (label && !label.querySelector('.ai-badge')) {
+                const badge = document.createElement('span');
+                badge.className = 'ai-badge';
+                badge.innerText = 'AI优化';
+                label.appendChild(badge);
+            }
+        }
+    }
+
+    // 调用DeepSeek
+    async function callDeepSeek(messages, temperature = 0.6) {
+        const response = await fetch(DEEPSEEK_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: 'deepseek-chat',
+                messages: messages,
+                temperature: temperature,
+                max_tokens: 2000
+            })
+        });
+        if (!response.ok) throw new Error(`API错误 ${response.status}`);
+        const data = await response.json();
+        return data.choices[0].message.content;
+    }
+
+    // 审视按钮
+    document.getElementById('reviewBtn').addEventListener('click', async function() {
+        const data = collectFormData();
+        const reviewPrompt = `请审阅以下量化策略表单，指出其中存在的逻辑问题、参数缺失或表述不清之处：
+
+${JSON.stringify(data, null, 2)}
+
+请列出需要改进的具体问题，若无重大问题则说明“表单信息基本完整”。`;
+
+        document.getElementById('reviewOutput').innerText = '⏳ 审视中...';
+        try {
+            const reply = await callDeepSeek([
+                { role: 'system', content: '你是一个专业的量化策略审阅专家。' },
+                { role: 'user', content: reviewPrompt }
+            ], 0.5);
+            document.getElementById('reviewOutput').innerText = reply;
+        } catch (e) {
+            document.getElementById('reviewOutput').innerText = '❌ 审视失败：' + e.message;
+        }
+    });
+
+    // 一键优化表单
+    document.getElementById('optimizeFormBtn').addEventListener('click', async function() {
+        const data = collectFormData();
+        const review = document.getElementById('reviewOutput').innerText;
+        if (!review || review.includes('点击审视')) {
+            alert('请先点击审视按钮');
+            return;
+        }
+
+        const optimizePrompt = `基于原始表单和审阅意见，生成优化后的表单内容。
+
+原始表单：${JSON.stringify(data, null, 2)}
+审阅意见：${review}
+
+请输出JSON格式，只包含需要修改的字段及其新内容。`;
+
+        document.getElementById('reviewOutput').innerText = '⏳ 优化中...';
+        try {
+            const reply = await callDeepSeek([
+                { role: 'system', content: '你是一个策略优化专家，输出JSON格式。' },
+                { role: 'user', content: optimizePrompt }
+            ], 0.4);
+            
+            const jsonMatch = reply.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                const optimized = JSON.parse(jsonMatch[0]);
+                if (optimized.goal) setFormValueWithHighlight('goal', optimized.goal, '优化目标描述');
+                if (optimized.entryLogic) setFormValueWithHighlight('entryLogic', optimized.entryLogic, '优化进场条件');
+                if (optimized.exitLogic) setFormValueWithHighlight('exitLogic', optimized.exitLogic, '优化出场条件');
+                if (optimized.constraints) setFormValueWithHighlight('constraints', optimized.constraints, '优化约束条件');
+                document.getElementById('reviewOutput').innerText = '✅ 优化完成，绿色高亮部分为AI修改内容';
+            }
+        } catch (e) {
+            document.getElementById('reviewOutput').innerText = '❌ 优化失败：' + e.message;
+        }
+    });
+
+    // 生成提示词
+    let lastPrompt = '';
+    document.getElementById('generateBtn').addEventListener('click', async function() {
+        const data = collectFormData();
+        const supplement = document.getElementById('supplementInput').value;
+        
+        const prompt = `请根据以下策略信息生成一份可直接复制到Claude Code的提示词：
+
+${JSON.stringify(data, null, 2)}
+
+补充说明：${supplement || '无'}
+
+要求：提示词结构化、包含所有关键参数、逻辑清晰、可直接执行。`;
+        
+        document.getElementById('outputContent').innerText = '⏳ 生成中...';
+        try {
+            const reply = await callDeepSeek([
+                { role: 'system', content: '你是一个专业的提示词工程师，生成高质量的Claude Code提示词。' },
+                { role: 'user', content: prompt }
+            ]);
+            document.getElementById('outputContent').innerText = reply;
+            lastPrompt = reply;
+            document.getElementById('apiNote').innerText = '✅ 生成成功';
+        } catch (e) {
+            document.getElementById('outputContent').innerText = '❌ 生成失败：' + e.message;
+        }
+    });
+
+    // 优化提示词
+    document.getElementById('optimizeBtn').addEventListener('click', async function() {
+        const opt = document.getElementById('optimizeInput').value;
+        if (!opt) return alert('请输入优化建议');
+        if (!lastPrompt) return alert('请先生成提示词');
+        
+        document.getElementById('outputContent').innerText = '⏳ 优化中...';
+        try {
+            const reply = await callDeepSeek([
+                { role: 'system', content: '你优化提示词，融入用户建议。' },
+                { role: 'user', content: `原提示词：${lastPrompt}\n优化建议：${opt}` }
+            ]);
+            document.getElementById('outputContent').innerText = reply;
+            lastPrompt = reply;
+            document.getElementById('apiNote').innerText = '✅ 优化完成';
+        } catch (e) {
+            document.getElementById('outputContent').innerText = '❌ 优化失败：' + e.message;
+        }
+    });
+
+    // 复制
+    document.getElementById('copyBtn').addEventListener('click', () => {
+        navigator.clipboard.writeText(document.getElementById('outputContent').innerText);
+        alert('已复制');
+    });
+
+    // 重置
+    document.getElementById('resetBtn').addEventListener('click', () => {
+        if (confirm('重置所有字段？')) {
+            location.reload();
+        }
+    });
+</script>
+</body>
+</html>
